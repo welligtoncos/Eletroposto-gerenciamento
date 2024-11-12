@@ -18,14 +18,21 @@ class ChargePoint(CP):
         response = await self.call(request)
         print(f"Resposta de RemoteStopTransaction: {response.status}")
 
-async def on_connect(websocket, path):
-    charge_point_id = path.strip('/')
+async def on_connect(websocket):
+    charge_point_id = "CP_1"
     charge_point = ChargePoint(charge_point_id, websocket)
     connected_charge_points[charge_point_id] = charge_point
 
     print(f"Carregador {charge_point_id} conectado.")
 
-    await charge_point.start()
+    try:
+        await charge_point.start()
+    except websockets.exceptions.ConnectionClosed as e:
+        print(f"Conexão com {charge_point_id} foi encerrada: {e}")
+    finally:
+        # Remova o ponto de carga desconectado da lista
+        connected_charge_points.pop(charge_point_id, None)
+        print(f"Carregador {charge_point_id} desconectado.")
 
 async def main():
     server = await websockets.serve(
@@ -37,24 +44,24 @@ async def main():
 
     print("Sistema Central rodando em ws://localhost:9000/")
 
-    # Aguardar conexão do carregador
-    await asyncio.sleep(2)
-
-    # Enviar comandos para ligar e desligar a carga
-    cp_id = 'CP_1'
-    id_tag = 'User123'
-    transaction_id = 1  # Um ID fictício de transação
-
-    if cp_id in connected_charge_points:
-        charge_point = connected_charge_points[cp_id]
-        # Enviar comando para ligar o carregador
-        await charge_point.send_remote_start(id_tag)
-        # Aguardar 5 segundos simulando carregamento
-        await asyncio.sleep(5)
-        # Enviar comando para desligar o carregador
-        await charge_point.send_remote_stop(transaction_id)
-    else:
-        print(f"Carregador {cp_id} não está conectado.")
+    # Loop principal para monitorar pontos conectados
+    while True:
+        await asyncio.sleep(1)
+        if "CP_1" in connected_charge_points:
+            # Verifica se o ponto de carga está conectado
+            charge_point = connected_charge_points["CP_1"]
+            id_tag = 'User123'
+            transaction_id = 1
+            try:
+                # Inicia a transação remotamente
+                await charge_point.send_remote_start(id_tag)
+                await asyncio.sleep(5)  # Simula o carregamento
+                # Para a transação remotamente
+                await charge_point.send_remote_stop(transaction_id)
+            except Exception as e:
+                print(f"Erro ao comunicar com o ponto de carga: {e}")
+        else:
+            print("Aguardando conexão do Carregador CP_1...")
 
     await server.wait_closed()
 

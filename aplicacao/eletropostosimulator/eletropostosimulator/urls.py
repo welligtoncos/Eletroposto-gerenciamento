@@ -6,5 +6,5 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('ocppconnection.urls')),  # Inclua as URLs do aplicativo ocppconnection
+    path('', include('ocppconnection.urls')),  # Inclua as URLs do aplicativo ocppconnection
 ]

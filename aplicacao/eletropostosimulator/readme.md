@@ -42,3 +42,8 @@ python manage.py createsuperuser
 bash
 Copiar código
 python manage.py runserver
+
+fechar a porta
+netstat -aon | findstr :9001
+TCP    127.0.0.1:9001      0.0.0.0:0              LISTENING       <Process_ID>
+taskkill /PID <Process_ID> /F

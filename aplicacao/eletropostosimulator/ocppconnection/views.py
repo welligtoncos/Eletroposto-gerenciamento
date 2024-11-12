@@ -3,13 +3,16 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import asyncio
- 
+import subprocess
 
 from ocppconnection.serializer import CarregadorSerializer
 
 from .models import Carregador 
 
 from ocppconnection.carregador_central.central_system import connected_charge_points  # Caminho ajustado 
+
+# Variável global para manter referência ao processo
+simulator_process = None
 
 # ViewSet para gerenciar os carregadores (CRUD)
 class CarregadorViewSet(viewsets.ModelViewSet):
@@ -35,10 +38,14 @@ class RemoteStartTransactionView(APIView):
 class RemoteStopTransactionView(APIView):
     def post(self, request, *args, **kwargs):
         charge_point_id = request.data.get('charge_point_id', 'CP_1')
-        transaction_id = request.data.get('transaction_id', 1) 
-        print(connected_charge_points)
-        charge_point = connected_charge_points[charge_point_id]
-        # Envia o comando de forma assíncrona
-        asyncio.run(charge_point.send_remote_stop(transaction_id))
-        return Response({"message": "RemoteStopTransaction enviado com sucesso."}, status=status.HTTP_200_OK)
+        transaction_id = request.data.get('transaction_id', 1)
+        
+        # Verifique se o ponto de carga está conectado
+        if charge_point_id in connected_charge_points:
+            charge_point = connected_charge_points[charge_point_id]
+            # Envia o comando de forma assíncrona
+            asyncio.run(charge_point.send_remote_stop(transaction_id))
+            return Response({"message": "RemoteStopTransaction enviado com sucesso."}, status=status.HTTP_200_OK)
+        
         return Response({"error": "Carregador não conectado."}, status=status.HTTP_404_NOT_FOUND)
+

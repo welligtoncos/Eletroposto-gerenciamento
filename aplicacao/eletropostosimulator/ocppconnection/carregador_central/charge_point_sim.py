@@ -15,7 +15,7 @@ class ChargePoint(CP):
             print("Conexão finalizada.")
 
 async def main():
-    uri = "ws://localhost:9001/CP_1"  # Certifique-se de que o URI está correto
+    uri = "ws://localhost:9002/CP_1"  # Certifique-se de que o URI está correto
     try:
         async with websockets.connect(uri, subprotocols=['ocpp1.6']) as websocket:
             charge_point_id = "CP_1"

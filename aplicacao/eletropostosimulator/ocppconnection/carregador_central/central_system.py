@@ -1,7 +1,8 @@
+# central_system.py
 import asyncio
 import websockets
 from ocpp.v16 import ChargePoint as CP
-from ocpp.v16 import call
+from ocpp.v16 import call 
 
 connected_charge_points = {}
 
@@ -19,11 +20,12 @@ class ChargePoint(CP):
         print(f"Resposta de RemoteStopTransaction: {response.status}")
 
 async def on_connect(websocket):
-    charge_point_id = "CP_1"
+    charge_point_id = "CP_1"  # Identificador para o ponto de carga
     charge_point = ChargePoint(charge_point_id, websocket)
     connected_charge_points[charge_point_id] = charge_point
 
     print(f"Carregador {charge_point_id} conectado.")
+    print (connected_charge_points)
 
     try:
         await charge_point.start()
@@ -42,26 +44,7 @@ async def main():
         subprotocols=['ocpp1.6']
     )
 
-    print("Sistema Central rodando em ws://localhost:9000/")
-
-    # Loop principal para monitorar pontos conectados
-    while True:
-        await asyncio.sleep(1)
-        if "CP_1" in connected_charge_points:
-            # Verifica se o ponto de carga está conectado
-            charge_point = connected_charge_points["CP_1"]
-            id_tag = 'User123'
-            transaction_id = 1
-            try:
-                # Inicia a transação remotamente
-                await charge_point.send_remote_start(id_tag)
-                await asyncio.sleep(5)  # Simula o carregamento
-                # Para a transação remotamente
-                await charge_point.send_remote_stop(transaction_id)
-            except Exception as e:
-                print(f"Erro ao comunicar com o ponto de carga: {e}")
-        else:
-            print("Aguardando conexão do Carregador CP_1...")
+    print("Sistema Central rodando em ws://localhost:9001/") 
 
     await server.wait_closed()
 

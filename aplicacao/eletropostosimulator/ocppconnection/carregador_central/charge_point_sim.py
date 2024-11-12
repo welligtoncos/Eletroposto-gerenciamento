@@ -1,3 +1,4 @@
+# charge_point_sim.py
 import asyncio
 import websockets
 from ocpp.v16 import ChargePoint as CP
@@ -6,7 +7,6 @@ class ChargePoint(CP):
     async def start(self):
         print("Simulador de Ponto de Carga Iniciado.")
         try:
-            # Simulador espera indefinidamente, aguardando comandos do sistema central
             while True:
                 await asyncio.sleep(1)
         except asyncio.CancelledError:

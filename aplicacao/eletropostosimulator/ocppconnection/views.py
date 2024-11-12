@@ -34,7 +34,7 @@ class RemoteStartTransactionView(APIView):
 
 class RemoteStopTransactionView(APIView):
     def post(self, request, *args, **kwargs):
-        charge_point_id =  'CP_1'
+        charge_point_id = request.data.get('charge_point_id', 'CP_1')
         transaction_id = request.data.get('transaction_id', 1) 
         print(connected_charge_points)
         charge_point = connected_charge_points[charge_point_id]
